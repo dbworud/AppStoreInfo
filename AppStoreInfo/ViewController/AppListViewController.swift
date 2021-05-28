@@ -15,7 +15,6 @@ import RxDataSources
 import Moya
 
 class AppListViewController: BaseViewController, View {
-    
     let headerView = UIView().then {
         $0.backgroundColor = .white
     }
@@ -36,6 +35,10 @@ class AppListViewController: BaseViewController, View {
         super.viewDidLoad()
         reactor = AppListViewReactor()
         reactor?.action.onNext(Reactor.Action.updateAppList)
+    }
+  
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
     }
     
     override func setupView() {
@@ -72,12 +75,17 @@ class AppListViewController: BaseViewController, View {
     
     func bind(reactor: AppListViewReactor) {
         // Action
-//        tableView.rx.itemSelected
-//            .subscribe(onNext: { [weak self] indexPath in
-//                let row = indexPath.row
-//                let destinationController = AppDetailViewController()
-//
-//            })
+        tableView.rx.itemSelected
+            .subscribe(onNext: { [weak self] indexPath in
+                guard let `self` = self else { return }
+
+                self.tableView.deselectRow(at: indexPath, animated: false)
+                let row = indexPath.row
+                let destination = AppDetailViewController()
+                destination.appID = self.reactor?.currentState.appList[row].id
+                self.navigationController?.pushViewController(destination, animated: false)
+            })
+            .disposed(by: disposeBag)
         
         // State
         reactor.state
@@ -89,3 +97,4 @@ class AppListViewController: BaseViewController, View {
             .disposed(by: disposeBag)
     }
 }
+
